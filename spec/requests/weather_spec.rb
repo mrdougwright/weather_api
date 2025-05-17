@@ -17,7 +17,7 @@ RSpec.describe "Weather API", type: :request do
   end
 
   it "returns weather data for a given address" do
-    get "/weather", params: { address: "Austin, TX" }
+    get "/weather", params: { address: "Austin, TX" }, headers: { "ACCEPT" => "application/json" }
 
     expect(Geocoder).to have_received(:search).with("Austin, TX")
     expect(response).to have_http_status(:success)
