@@ -10,12 +10,7 @@ A lightweight Ruby on Rails API that retrieves and caches current weather foreca
   - Daily high and low
   - Feels like temperature
   - Weather summary (e.g., "clear sky")
-- Caches results by place_id for 30 minutes
-
-## Modules
-
-- **`ForecastParser`**: Encapsulates logic for transforming raw API response into a clean Ruby hash
-- **`WeatherController`**: Handles request flow, delegates geocoding, parsing, and caching
+- Caches results for 30 minutes
 
 ## Running Locally
 
@@ -63,3 +58,31 @@ With browser, go to `http://localhost:3000` and enter city & state into form.
   "summary": "clear sky",
   "from_cache": false
 }
+```
+
+## Object Decomposition
+
+This app is structured with separation of concerns in mind:
+
+### Controllers
+- WeatherController
+
+Handles HTTP requests, orchestrates flow, and delegates to services. Supports both HTML and JSON output.
+
+### Services
+- ForecastParser
+
+Parses raw API responses into a structured Ruby hash. Keeps transformation logic testable and independent.
+
+- ForecastCache
+
+Handles caching logic: retrieves forecasts from Redis if present, or fetches from OpenWeather and stores the result. Centralizes external API and caching logic outside the controller.
+
+### Views
+- index.html.erb
+
+Provides a simple UI form for entering addresses and viewing the forecast results.
+
+### Specs
+Unit test for ForecastParser
+Request spec for WeatherController simulates full request/response flow
