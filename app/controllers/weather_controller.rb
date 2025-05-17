@@ -1,37 +1,46 @@
-class WeatherController < ApplicationController
+class WeatherController < ActionController::Base
+  protect_from_forgery with: :exception
+  include ActionController::MimeResponds
+
+
+  def index
+    render :index
+  end
+
   def show
-    # Geocode address from params
     address = params[:address]
+    if address.blank?
+      return respond_with_error("Address is required")
+    end
+
     location = Geocoder.search(address).first
-    lat, lon = location.latitude, location.longitude
-
-    cache_key = "weather:#{location.place_id}"
-    cached_forecast = Rails.cache.read(cache_key)
-
-    if cached_forecast
-      render json: cached_forecast.merge(from_cache: true)
-      return
+    if location.nil?
+      return respond_with_error("Could not geocode address")
     end
 
-    # Call Open Weather API
-    # https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={API key}
-    response = HTTP.get("https://api.openweathermap.org/data/2.5/weather", params: {
-      lat: lat,
-      lon: lon,
-      appid: ENV["OPENWEATHER_API_KEY"],
-      units: "imperial"
-    })
+    place_id, lat, lon = location.place_id, location.latitude, location.longitude
 
-    unless response.status.success?
-      render json: { error: "Failed to fetch weather data" }, status: :bad_gateway
-      return
+    begin
+      @forecast = ForecastCache.fetch(place_id: place_id, lat: lat, lon: lon)
+    rescue => e
+      return respond_with_error(e.message)
     end
 
-    data = JSON.parse(response.body.to_s)
-    forecast = ForecastParser.parse(data)
+    respond_to do |format|
+       format.html { render :index }
+       format.json { render json: @forecast }
+     end
+  end
 
-    Rails.cache.write(cache_key, forecast, expires_in: 30.minutes)
+  private
 
-    render json: forecast.merge(from_cache: false)
+  def respond_with_error(message)
+    respond_to do |format|
+      format.html do
+        @error = message
+        render :index
+      end
+      format.json { render json: { error: message }, status: :bad_request }
+    end
   end
 end
