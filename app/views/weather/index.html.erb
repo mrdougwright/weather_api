@@ -1,0 +1,21 @@
+
+<h1>Weather Forecast</h1>
+
+<%= form_with url: "/weather", method: :get, local: true do |form| %>
+  <%= form.label :address, "Enter Address (ex: Austin, TX)" %><br>
+  <%= form.text_field :address, required: true %>
+  <%= form.submit "Get Forecast" %>
+<% end %>
+
+<% if @forecast %>
+  <h2>Forecast for <%= params[:address] %>:</h2>
+  <ul>
+    <li>Temperature: <%= @forecast[:temperature] %>°F</li>
+    <li>High: <%= @forecast[:high] %>°F</li>
+    <li>Low: <%= @forecast[:low] %>°F</li>
+    <li>Feels like: <%= @forecast[:feels_like] %></li>
+    <li>Summary: <%= @forecast[:summary] %></li>
+  </ul>
+<% elsif @error %>
+  <p style="color: red;"><%= @error %></p>
+<% end %>

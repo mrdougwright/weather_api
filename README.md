@@ -47,10 +47,12 @@ rails server
 
 With curl:
 ```bash
-curl "http://localhost:3000/weather?address=Austin,TX"
+curl "http://localhost:3000/weather.json?address=Austin,TX"
 ```
 
-#### Example Response
+With browser, go to `http://localhost:3000` and enter city & state into form.
+
+#### Example JSON Response
 
 ```json
 {
