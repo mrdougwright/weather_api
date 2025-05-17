@@ -10,7 +10,8 @@ class WeatherController < ApplicationController
     response = HTTP.get("https://api.openweathermap.org/data/2.5/weather", params: {
       lat: lat,
       lon: lon,
-      appid: ENV["OPENWEATHER_API_KEY"]
+      appid: ENV["OPENWEATHER_API_KEY"],
+      units: "imperial"
     })
 
     unless response.status.success?
@@ -19,7 +20,8 @@ class WeatherController < ApplicationController
     end
 
     data = JSON.parse(response.body.to_s)
+    forecast = ForecastParser.parse(data)
 
-    render json: data
+    render json: forecast
   end
 end
